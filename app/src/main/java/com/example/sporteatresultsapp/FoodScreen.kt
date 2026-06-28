@@ -25,6 +25,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -38,8 +39,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import kotlinx.serialization.Serializable
 
 
+@Serializable
 data class FoodItem(
     val name: String,
     val protein: Double,
@@ -51,15 +55,18 @@ data class FoodItem(
 }
 
 @Composable
-fun FoodScreen(modifier: Modifier = Modifier) {
+fun FoodScreen(
+    modifier: Modifier = Modifier,
+    viewModel: FoodViewModel = viewModel() // viewModel() сам создаст и запомнит VM
+) {
    // состояния для полей ввода
     var foodName by remember { mutableStateOf("") }
     var proteinInput by remember { mutableStateOf("") }
     var fatInput by remember { mutableStateOf("") }
     var carbsInput by remember { mutableStateOf("") }
 
-    // список продуктов
-    val foodList = remember { mutableStateListOf<FoodItem>() }
+    // список продуктов, подписываемся на Flow из VM — список теперь из DataStore
+    val foodList by viewModel.foodList.collectAsState()
 
     // итоговые значения
     val totalProtein = foodList.sumOf { it.protein }
@@ -94,7 +101,7 @@ fun FoodScreen(modifier: Modifier = Modifier) {
                 val carbs = carbsInput.toDoubleOrNull() ?: 0.0
 
                 if (foodName.isNotBlank() && (protein > 0 || fat > 0 || carbs > 0 )) {
-                    foodList.add(FoodItem(foodName, protein, fat, carbs))
+                    viewModel.addFood(FoodItem(foodName, protein, fat, carbs))
                     // очищаем поля
                     foodName = ""
                     proteinInput = ""
@@ -118,7 +125,8 @@ fun FoodScreen(modifier: Modifier = Modifier) {
         // список продуктов
         FoodListCard(
             foodList = foodList,
-            onDeleteItem = { foodList.remove(it) }
+            onDeleteItem = { viewModel.deleteFood(it) },
+            onClearAll = { viewModel.clearAll() }
         )
     }
 }
@@ -175,8 +183,8 @@ fun AddFoodForm(
                     modifier = Modifier.weight(1f),
                     singleLine = true,
                     colors = TextFieldDefaults.colors(
-                        focusedLabelColor = Color(0xFF4CAF50),
-                        unfocusedLabelColor = Color(0xFF4CAF50)
+                        focusedLabelColor = Color(0xFFE91E63),
+                        unfocusedLabelColor = Color(0xFFE91E63)
                     ),
                 )
 
@@ -187,8 +195,8 @@ fun AddFoodForm(
                     modifier = Modifier.weight(1f),
                     singleLine = true,
                     colors = TextFieldDefaults.colors(
-                        focusedLabelColor = Color(0xFFFF9800),
-                        unfocusedLabelColor = Color(0xFFFF9800)
+                        focusedLabelColor = Color(0xFF9C27B0),
+                        unfocusedLabelColor = Color(0xFF9C27B0)
                     )
                 )
 
@@ -199,8 +207,8 @@ fun AddFoodForm(
                     modifier = Modifier.weight(1f),
                     singleLine = true,
                     colors = TextFieldDefaults.colors(
-                        focusedLabelColor = Color(0xFF2196F3),
-                        unfocusedLabelColor = Color(0xFF2196F3)
+                        focusedLabelColor = Color(0xFF673AB7),
+                        unfocusedLabelColor = Color(0xFF673AB7)
                     )
                 )
             }
@@ -254,19 +262,19 @@ fun TotalValuesCard(
                     label = "Calories",
                     value = String.format("%.1f", calories),
                     unit = "ккал",
-                    color = Color(0xFFFF5722)
+                    color = Color(0xFFE91E63)
                 )
                 TotalValueItem(
                     label = "Protein",
                     value = String.format("%.1f", protein),
                     unit = "g",
-                    color = Color(0xFF4CAF50)
+                    color = Color(0xFF9C27B0)
                 )
                 TotalValueItem(
                     label = "Fat",
                     value = String.format("%.1f", fat),
                     unit = "g",
-                    color = Color(0xFFFF9800)
+                    color = Color(0xFF673AB7)
                 )
                 TotalValueItem(
                     label = "Carbs",
@@ -310,8 +318,9 @@ fun TotalValueItem(
 
 @Composable
 fun FoodListCard(
-    foodList: SnapshotStateList<FoodItem>,
+    foodList: List<FoodItem>,
     onDeleteItem: (FoodItem) -> Unit,
+    onClearAll: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Card(
@@ -339,6 +348,16 @@ fun FoodListCard(
                     fontSize = 14.sp,
                     color = Color.Gray
                 )
+            }
+
+            Button(
+                onClick = onClearAll,
+                modifier = Modifier.fillMaxWidth(),
+                colors = androidx.compose.material3.ButtonDefaults.buttonColors(
+                    containerColor = Color.Red.copy(alpha = 0.8f)
+                )
+            ) {
+                Text("Clear all")
             }
 
             HorizontalDivider(
@@ -401,23 +420,23 @@ fun FoodListItem(
                 Text(
                     text = "Б: ${String.format("%.1f", item.protein)}г",
                     fontSize = 13.sp,
-                    color = Color(0xFF4CAF50)
+                    color = Color(0xFFE91E63)
                 )
                 Text(
                     text = "Ж: ${String.format("%.1f", item.fat)}г",
                     fontSize = 13.sp,
-                    color = Color(0xFFFF9800)
+                    color = Color(0xFF9C27B0)
                 )
                 Text(
                     text = "У: ${String.format("%.1f", item.carbs)}г",
                     fontSize = 13.sp,
-                    color = Color(0xFF2196F3)
+                    color = Color(0xFF673AB7)
                 )
                 Text(
                     text = "${String.format("%.0f", item.calories)} ккал",
                     fontSize = 13.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFFFF5722)
+                    color = Color(0xFF2196F3)
                 )
             }
         }
