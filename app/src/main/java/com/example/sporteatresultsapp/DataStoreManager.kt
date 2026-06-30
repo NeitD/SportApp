@@ -18,6 +18,7 @@ class DataStoreManager(private val context: Context) {
     // key
     companion object {
         val FOOD_LIST_KEY = stringPreferencesKey("food_list")
+        val RESULTS_LIST_KEY = stringPreferencesKey("results_list")
     }
 
     // Сохранить список — suspend потому что это асинхронная операция
@@ -33,6 +34,20 @@ class DataStoreManager(private val context: Context) {
         return context.dataStore.data.map { preferences ->
             val json = preferences[FOOD_LIST_KEY] ?: return@map emptyList()
             Json.decodeFromString<List<FoodItem>>(json)
+        }
+    }
+
+    suspend fun saveResultsList(resultsList: List<ResultItem>) {
+        val json = Json.encodeToString(resultsList)
+        context.dataStore.edit { preferences ->
+            preferences[RESULTS_LIST_KEY] = json
+        }
+    }
+
+    fun getResultsList(): Flow<List<ResultItem>> {
+        return context.dataStore.data.map { preferences ->
+            val json = preferences[RESULTS_LIST_KEY] ?: return@map emptyList()
+            Json.decodeFromString<List<ResultItem>>(json)
         }
     }
 }

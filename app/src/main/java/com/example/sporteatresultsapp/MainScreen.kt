@@ -99,17 +99,6 @@ fun MainScreenPreview(modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun ResultsScreen(modifier: Modifier = Modifier) {
-    Box(
-        modifier = Modifier
-            .fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        Text("результаты", fontSize = 24.sp)
-    }
-}
-
-@Composable
 fun ProfileScreen(modifier: Modifier = Modifier) {
     Box(
         modifier = Modifier
