@@ -98,16 +98,4 @@ fun MainScreenPreview(modifier: Modifier = Modifier) {
     }
 }
 
-@Composable
-fun ProfileScreen(modifier: Modifier = Modifier) {
-    Box(
-        modifier = Modifier
-            .fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        Text("профиль", fontSize = 24.sp)
-    }
-}
-
-
 
