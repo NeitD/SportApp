@@ -38,9 +38,17 @@ fun ProgramScreen(modifier: Modifier = Modifier) {
     val workoutProgram = getSampleWorkoutProgram()
 
     Column(
-        modifier = modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally
+        modifier = modifier
+            .fillMaxSize()
+            .padding(horizontal = 16.dp, vertical = 16.dp)
     ) {
+        Text(
+            text = "Программа тренировок",
+            fontSize = 24.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(bottom = 16.dp),
+        )
+
         DaySelector(
             days = workoutProgram.days.map { it.name },
             selectedIndex = selectedDayIndex,

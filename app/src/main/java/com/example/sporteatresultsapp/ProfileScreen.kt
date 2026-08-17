@@ -9,9 +9,12 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -30,6 +33,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import java.time.LocalDate
@@ -72,12 +76,40 @@ fun ProfileScreen(modifier: Modifier = Modifier) {
         )
     }
 
+    // BMI
+    val weightDouble = weight.toDoubleOrNull() ?: 0.0
+    val heightDouble = height.toDoubleOrNull() ?: 1.0 // чтобы на ноль не делить
+
+    val bmi = remember(weightDouble, heightDouble) {
+        if (heightDouble > 0) weightDouble / ((heightDouble / 100) * (heightDouble / 100)) else 0.0
+    }
+
+    val bmiStatus = when {
+        bmi < 18.5 -> "Underweight"
+        bmi < 25.0 -> "Normal weight"
+        bmi < 30.0 -> "Overweight"
+        else -> "Obese"
+    }
+
+    val bmiColor = when {
+        bmi < 18.5 -> Color(0xFF03A9F4)
+        bmi < 25 -> Color(0xFF4CAF50)
+        bmi < 30 -> Color(0xFFFF9800)
+        else -> Color(0xFFF44336)
+    }
+
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
-            .statusBarsPadding()
-            .padding(16.dp)
+            .padding(horizontal = 16.dp, vertical = 16.dp)
     ) {
+        Text(
+            text = "Профиль",
+            fontSize = 24.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(bottom = 16.dp)
+        )
+
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -104,16 +136,24 @@ fun ProfileScreen(modifier: Modifier = Modifier) {
             )
         }
 
-        Box(
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f),
-            contentAlignment = Alignment.Center
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Text(
-                text = "to be continued...",
-                fontSize = 16.sp,
-                color = Color.Gray
+            BmiCard(
+                bmi = bmi,
+                status = bmiStatus,
+                color = bmiColor,
+                modifier = Modifier.weight(1f)
+            )
+
+            WaterTrackerCard(
+                weight = weightDouble,
+                modifier = Modifier.weight(1f)
             )
         }
     }
@@ -256,5 +296,112 @@ fun TargetRow(
             fontWeight = FontWeight.Bold,
             color = color
         )
+    }
+}
+
+@Composable
+fun BmiCard(
+    bmi: Double,
+    status: String,
+    color: Color,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier.fillMaxHeight(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(20.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Text(
+                text = "Body Mass Index (BMI)",
+                fontSize = 16.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+
+            Text(
+                text = "%.1f".format(bmi),
+                fontSize = 48.sp,
+                fontWeight = FontWeight.ExtraBold,
+                color = color
+            )
+
+            Text(
+                text = status,
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold,
+                color = color
+            )
+
+            Text(
+                text = "Based on your weight and height",
+                fontSize = 12.sp,
+                color = Color.Gray,
+                textAlign = TextAlign.Center
+            )
+        }
+    }
+}
+
+@Composable
+fun WaterTrackerCard(
+    weight: Double,
+    modifier: Modifier = Modifier
+) {
+    // Расчет: 33 мл на 1 кг веса
+    val waterGoal = (weight * 0.033).let { "%.1f".format(it) }
+
+    Card(
+        modifier = modifier.fillMaxHeight(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Color(0xFFE3F2FD)
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.SpaceEvenly,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = "Water Intake",
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF1976D2)
+            )
+
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = "$waterGoal L",
+                    fontSize = 32.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF1565C0)
+                )
+                Text(
+                    text = "Daily goal",
+                    fontSize = 14.sp,
+                    color = Color.Gray
+                )
+            }
+
+            Text(
+                text = "Hydration helps your metabolism and energy!",
+                fontSize = 12.sp,
+                color = Color.DarkGray,
+                textAlign = TextAlign.Center,
+                lineHeight = 16.sp
+            )
+        }
     }
 }

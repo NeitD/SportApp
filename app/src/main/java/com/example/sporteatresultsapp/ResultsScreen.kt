@@ -53,9 +53,10 @@ fun ResultsScreen(
 
     val resultsList by viewModel.resultsList.collectAsState()
 
-    Column(modifier = modifier
-        .fillMaxSize()
-        .padding(horizontal = 16.dp, vertical = 8.dp)
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(horizontal = 16.dp, vertical = 16.dp)
     ) {
         Text(
             text = "Results",

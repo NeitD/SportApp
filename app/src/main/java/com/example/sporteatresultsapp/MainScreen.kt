@@ -1,5 +1,7 @@
 package com.example.sporteatresultsapp
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -48,6 +50,7 @@ data class WorkoutProgram(
     val days: List<WorkoutDay>
 )
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun MainScreen(modifier: Modifier = Modifier) {
 
@@ -61,6 +64,7 @@ fun MainScreen(modifier: Modifier = Modifier) {
     )
 
     Scaffold(
+        modifier = modifier,
         bottomBar = {
             NavigationBar {
                 items.forEachIndexed { index, item ->
@@ -80,16 +84,18 @@ fun MainScreen(modifier: Modifier = Modifier) {
             }
         }
     ) { paddingValues ->
+        val screenModifier = Modifier.padding(paddingValues)
         when (selectedIndex) {
-            0 -> ProgramScreen(modifier = Modifier.padding(paddingValues))
-            1 -> FoodScreen(modifier = Modifier.padding(paddingValues))
-            2 -> ResultsScreen(modifier = Modifier.padding(paddingValues))
-            3 -> ProfileScreen(modifier = Modifier.padding(paddingValues))
+            0 -> ProgramScreen(modifier = screenModifier)
+            1 -> FoodScreen(modifier = screenModifier)
+            2 -> ResultsScreen(modifier = screenModifier)
+            3 -> ProfileScreen(modifier = screenModifier)
         }
     }
 
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 @Preview(showBackground = true)
 fun MainScreenPreview(modifier: Modifier = Modifier) {
