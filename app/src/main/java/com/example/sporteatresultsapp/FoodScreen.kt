@@ -1,11 +1,7 @@
 package com.example.sporteatresultsapp
 
-import android.R
-import android.widget.Space
-import androidx.annotation.StyleRes
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -27,21 +23,16 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.sporteatresultsapp.ui.theme.SportEatResultsAppTheme
 import kotlinx.serialization.Serializable
 
 
@@ -61,7 +52,7 @@ fun FoodScreen(
     modifier: Modifier = Modifier,
     viewModel: FoodViewModel = viewModel() // viewModel() сам создаст и запомнит VM
 ) {
-   // состояния для полей ввода
+    // состояния для полей ввода
     var foodName by remember { mutableStateOf("") }
     var proteinInput by remember { mutableStateOf("") }
     var fatInput by remember { mutableStateOf("") }
@@ -82,7 +73,7 @@ fun FoodScreen(
             .padding(horizontal = 16.dp, vertical = 16.dp)
     ) {
         Text(
-            text = "Дневник питания",
+            text = "Food Diary",
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(bottom = 16.dp)
@@ -102,7 +93,7 @@ fun FoodScreen(
                 val fat = fatInput.toDoubleOrNull() ?: 0.0
                 val carbs = carbsInput.toDoubleOrNull() ?: 0.0
 
-                if (foodName.isNotBlank() && (protein > 0 || fat > 0 || carbs > 0 )) {
+                if (foodName.isNotBlank() && (protein > 0 || fat > 0 || carbs > 0)) {
                     viewModel.addFood(FoodItem(foodName, protein, fat, carbs))
                     // очищаем поля
                     foodName = ""
