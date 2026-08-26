@@ -12,6 +12,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -48,9 +49,15 @@ data class WorkoutProgram(
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun MainScreen(modifier: Modifier = Modifier) {
+fun MainScreen(
+    isDarkTheme: Boolean,
+    onThemeChange: (Boolean) -> Unit,
+    modifier: Modifier = Modifier
+) {
 
-   var selectedIndex by remember { mutableIntStateOf(0) }
+    var selectedIndex by remember { mutableIntStateOf(0) }
+
+    var isSettingsOpen by remember { mutableStateOf(false) }
 
     val items = listOf(
         NavItem("Программа", R.drawable.gym, R.drawable.gym),
@@ -62,33 +69,47 @@ fun MainScreen(modifier: Modifier = Modifier) {
     Scaffold(
         modifier = modifier,
         bottomBar = {
-            NavigationBar {
-                items.forEachIndexed { index, item ->
-                    NavigationBarItem(
-                        icon = {
-                            Icon(
-                                painter = painterResource(id = if (selectedIndex == index) item.iconSelected else item.iconUnselected),
-                                contentDescription = item.label,
-                                modifier = Modifier.size(24.dp)
-                            )
-                        },
-                        label = { Text(item.label) },
-                        selected = selectedIndex == index,
-                        onClick = { selectedIndex = index }
-                    )
+            if (!isSettingsOpen) {
+                NavigationBar {
+                    items.forEachIndexed { index, item ->
+                        NavigationBarItem(
+                            icon = {
+                                Icon(
+                                    painter = painterResource(id = if (selectedIndex == index) item.iconSelected else item.iconUnselected),
+                                    contentDescription = item.label,
+                                    modifier = Modifier.size(24.dp)
+                                )
+                            },
+                            label = { Text(item.label) },
+                            selected = selectedIndex == index,
+                            onClick = { selectedIndex = index }
+                        )
+                    }
                 }
             }
         }
     ) { paddingValues ->
         val screenModifier = Modifier.padding(paddingValues)
-        when (selectedIndex) {
-            0 -> ProgramScreen(modifier = screenModifier)
-            1 -> FoodScreen(modifier = screenModifier)
-            2 -> ResultsScreen(modifier = screenModifier)
-            3 -> ProfileScreen(modifier = screenModifier)
+
+        if (isSettingsOpen) {
+            SettingsScreen(
+                onBackClick = { isSettingsOpen = false },
+                isDarkTheme = isDarkTheme,
+                onThemeChange = onThemeChange,
+                modifier = screenModifier
+            )
+        } else {
+            when (selectedIndex) {
+                0 -> ProgramScreen(modifier = screenModifier)
+                1 -> FoodScreen(modifier = screenModifier)
+                2 -> ResultsScreen(modifier = screenModifier)
+                3 -> ProfileScreen(
+                    modifier = screenModifier,
+                    onSettingsClick = { isSettingsOpen = true }
+                )
+            }
         }
     }
-
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -96,7 +117,10 @@ fun MainScreen(modifier: Modifier = Modifier) {
 @Preview(showBackground = true)
 fun MainScreenPreview(modifier: Modifier = Modifier) {
     SportEatResultsAppTheme() {
-        MainScreen()
+        MainScreen(
+            isDarkTheme = false,
+            onThemeChange = {}
+        )
     }
 }
 

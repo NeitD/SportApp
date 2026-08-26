@@ -50,7 +50,7 @@ fun ProgramScreen(modifier: Modifier = Modifier) {
         DaySelector(
             days = workoutProgram.days.map { it.name },
             selectedIndex = selectedDayIndex,
-            onDaySelected = { selectedDayIndex = it}
+            onDaySelected = { selectedDayIndex = it }
         )
 
         ExerciseTable(exercises = workoutProgram.days[selectedDayIndex].exercises)
@@ -207,7 +207,12 @@ fun getSampleWorkoutProgram(): WorkoutProgram {
                     Exercise("2", "Жим штанги лёжа (силовой)", "3×4–6", "RIR 1–2"),
                     Exercise("3", "Подтягивания параллельным хватом", "4×6–8", "RIR 1"),
                     Exercise("4", "Тяга горизонтального блока узким хватом", "4×8–12", ""),
-                    Exercise("5", "Разведения на среднюю дельту (кабель одноручный)", "3×12–15", ""),
+                    Exercise(
+                        "5",
+                        "Разведения на среднюю дельту (кабель одноручный)",
+                        "3×12–15",
+                        ""
+                    ),
                     Exercise("6", "Разведения на заднюю дельту (обратная PEC-Deck)", "3×12–15", ""),
                     Exercise("7", "Трицепс: жим на брусьях (вверх неполный)", "3×6–10", ""),
                     Exercise("8", "Трицепс: разгибание каната сверху", "3×12–15", ""),
@@ -248,7 +253,12 @@ fun getSampleWorkoutProgram(): WorkoutProgram {
                     Exercise("7", "Жим гантелей сидя (лёгкий, контрольный)", "2×8–10", ""),
                     Exercise("8", "Бицепс: молотковые", "3×8–10", ""),
                     Exercise("9", "Бицепс: скамья Скотта", "3×12–15", ""),
-                    Exercise("10", "Обратные сгибания EZ", "2×12", "Только на тяжёлой и средней неделе"),
+                    Exercise(
+                        "10",
+                        "Обратные сгибания EZ",
+                        "2×12",
+                        "Только на тяжёлой и средней неделе"
+                    ),
                     Exercise("", "Вакуум + Планка", "Отдельно в четверг", "")
                 )
             )

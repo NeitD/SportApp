@@ -3,6 +3,7 @@ package com.example.sporteatresultsapp
 import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
@@ -19,6 +20,7 @@ class DataStoreManager(private val context: Context) {
     companion object {
         val FOOD_LIST_KEY = stringPreferencesKey("food_list")
         val RESULTS_LIST_KEY = stringPreferencesKey("results_list")
+        val DARK_THEME_KEY = booleanPreferencesKey("dark_theme")
     }
 
     // Сохранить список — suspend потому что это асинхронная операция
@@ -49,5 +51,13 @@ class DataStoreManager(private val context: Context) {
             val json = preferences[RESULTS_LIST_KEY] ?: return@map emptyList()
             Json.decodeFromString<List<ResultItem>>(json)
         }
+    }
+
+    suspend fun saveTheme(isDark: Boolean) {
+        context.dataStore.edit { it[DARK_THEME_KEY] = isDark }
+    }
+
+    val isDarkThemeFlow: Flow<Boolean> = context.dataStore.data.map {
+        it[DARK_THEME_KEY] ?: false
     }
 }

@@ -42,7 +42,10 @@ import java.time.format.DateTimeFormatter
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun ProfileScreen(modifier: Modifier = Modifier) {
+fun ProfileScreen(
+    modifier: Modifier = Modifier,
+    onSettingsClick: () -> Unit
+) {
     // profile data (hard)
     var firstName by remember { mutableStateOf("Damon") }
     var lastName by remember { mutableStateOf("Neit") }
@@ -117,7 +120,7 @@ fun ProfileScreen(modifier: Modifier = Modifier) {
             )
 
             IconButton(
-                onClick = { /*TODO*/ },
+                onClick = onSettingsClick,
                 modifier = Modifier.size(24.dp)
             ) {
                 Icon(
@@ -243,19 +246,19 @@ fun ProfileInfoRow(
     label: String,
     value: String
 ) {
-Column {
-    Text(
-        text = label,
-        fontSize = 12.sp,
-        color = Color.Gray
-    )
-    Text(
-        text = value,
-        fontSize = 20.sp,
-        fontWeight = FontWeight.Bold,
-        color = MaterialTheme.colorScheme.onPrimaryContainer
-    )
-}
+    Column {
+        Text(
+            text = label,
+            fontSize = 12.sp,
+            color = Color.Gray
+        )
+        Text(
+            text = value,
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onPrimaryContainer
+        )
+    }
 }
 
 // second block
