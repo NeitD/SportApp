@@ -44,6 +44,7 @@ import java.time.format.DateTimeFormatter
 @Composable
 fun ProfileScreen(
     modifier: Modifier = Modifier,
+    weightUnit: String,
     onSettingsClick: () -> Unit
 ) {
     // profile data (hard)
@@ -82,6 +83,14 @@ fun ProfileScreen(
     // BMI
     val weightDouble = weight.toDoubleOrNull() ?: 0.0
     val heightDouble = height.toDoubleOrNull() ?: 1.0 // чтобы на ноль не делить
+
+    val displayWeight = remember(weightDouble, weightUnit) {
+        if (weightUnit == "lbs") {
+            (weightDouble * 0.453592).let { "%.1f".format(it) }
+        } else {
+            weight
+        }
+    }
 
     val bmi = remember(weightDouble, heightDouble) {
         if (heightDouble > 0) weightDouble / ((heightDouble / 100) * (heightDouble / 100)) else 0.0
@@ -140,8 +149,9 @@ fun ProfileScreen(
             ProfileInfoColumn(
                 firstName = firstName,
                 lastName = lastName,
-                weight = weight,
+                weight = displayWeight,
                 height = height,
+                weightUnit = weightUnit,
                 birthDate = birthDate.format(dateFormatter),
                 age = age,
                 onBirthDateClick = { datePickerDialog.show() },
@@ -187,6 +197,7 @@ fun ProfileInfoColumn(
     lastName: String,
     weight: String,
     height: String,
+    weightUnit: String,
     birthDate: String,
     age: Int,
     onBirthDateClick: () -> Unit,
@@ -214,7 +225,7 @@ fun ProfileInfoColumn(
             )
             ProfileInfoRow(label = "First name", value = firstName)
             ProfileInfoRow(label = "Last name", value = lastName)
-            ProfileInfoRow(label = "Weight", value = "$weight kg")
+            ProfileInfoRow(label = "Weight", value = "$weight $weightUnit")
             ProfileInfoRow(label = "Height", value = "$height cm")
 
             Column(

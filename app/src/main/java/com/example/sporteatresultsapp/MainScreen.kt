@@ -52,6 +52,8 @@ data class WorkoutProgram(
 fun MainScreen(
     isDarkTheme: Boolean,
     onThemeChange: (Boolean) -> Unit,
+    weightUnit: String,
+    onWeightUnitChange: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
 
@@ -96,15 +98,21 @@ fun MainScreen(
                 onBackClick = { isSettingsOpen = false },
                 isDarkTheme = isDarkTheme,
                 onThemeChange = onThemeChange,
+                weightUnit = weightUnit,
+                onWeightUnitChange = onWeightUnitChange,
                 modifier = screenModifier
             )
         } else {
             when (selectedIndex) {
                 0 -> ProgramScreen(modifier = screenModifier)
                 1 -> FoodScreen(modifier = screenModifier)
-                2 -> ResultsScreen(modifier = screenModifier)
+                2 -> ResultsScreen(
+                modifier = screenModifier,
+                weightUnit = weightUnit
+            )
                 3 -> ProfileScreen(
                     modifier = screenModifier,
+                    weightUnit = weightUnit,
                     onSettingsClick = { isSettingsOpen = true }
                 )
             }
@@ -119,7 +127,9 @@ fun MainScreenPreview(modifier: Modifier = Modifier) {
     SportEatResultsAppTheme() {
         MainScreen(
             isDarkTheme = false,
-            onThemeChange = {}
+            onThemeChange = {},
+            weightUnit = "kg",
+            onWeightUnitChange = {}
         )
     }
 }

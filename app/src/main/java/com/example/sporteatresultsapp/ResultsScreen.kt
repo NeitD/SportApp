@@ -45,6 +45,7 @@ data class ResultItem(
 @Composable
 fun ResultsScreen(
     modifier: Modifier = Modifier,
+    weightUnit: String,
     viewModel: ResultsViewModel = viewModel()
 ) {
     var exerciseName by remember { mutableStateOf("") }
@@ -68,6 +69,7 @@ fun ResultsScreen(
             exerciseName = exerciseName,
             onExerciseNameChange = { exerciseName = it },
             weightInput = weightInput,
+            weightUnit = weightUnit,
             onWeightChange = { weightInput = it },
             onAddClick = {
                 val weight = weightInput.toDoubleOrNull() ?: 0.0
@@ -84,6 +86,7 @@ fun ResultsScreen(
 
         ResultsListCard(
             resultsList = resultsList,
+            weightUnit = weightUnit,
             onDeleteItem = { viewModel.deleteResult(it) },
             onClearAll = { viewModel.clearAll() }
         )
@@ -95,6 +98,7 @@ fun AddResultForm(
     exerciseName: String,
     onExerciseNameChange: (String) -> Unit,
     weightInput: String,
+    weightUnit: String,
     onWeightChange: (String) -> Unit,
     onAddClick: () -> Unit
 ) {
@@ -128,7 +132,7 @@ fun AddResultForm(
             OutlinedTextField(
                 value = weightInput,
                 onValueChange = onWeightChange,
-                label = { Text("Weight (kg)") },
+                label = { Text("Weight ($weightUnit)") },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true
             )
@@ -149,6 +153,7 @@ fun AddResultForm(
 @Composable
 fun ResultsListCard(
     resultsList: List<ResultItem>,
+    weightUnit: String,
     onDeleteItem: (ResultItem) -> Unit,
     onClearAll: () -> Unit,
     modifier: Modifier = Modifier
@@ -203,6 +208,7 @@ fun ResultsListCard(
                     items(resultsList) { item ->
                         ResultListItem(
                             item = item,
+                            weightUnit = weightUnit,
                             onDelete = { onDeleteItem(item) }
                         )
                         HorizontalDivider(color = Color.LightGray, thickness = 0.5.dp)
@@ -228,6 +234,7 @@ fun ResultsListCard(
 @Composable
 fun ResultListItem(
     item: ResultItem,
+    weightUnit: String,
     onDelete: () -> Unit
 ) {
     Row(
@@ -244,7 +251,7 @@ fun ResultListItem(
                 fontWeight = FontWeight.Medium
             )
             Text(
-                text = "${String.format("%.1f", item.weight)} kg",
+                text = "${String.format("%.1f", item.weight)} $weightUnit",
                 fontSize = 14.sp,
                 color = Color(0xFF2196F3),
                 fontWeight = FontWeight.Bold

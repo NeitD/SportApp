@@ -33,11 +33,14 @@ class MainActivity : ComponentActivity() {
             )
 
             val isDarkTheme by mainViewModel.isDarkTheme.collectAsState()
+            val weightUnit by mainViewModel.weightUnit.collectAsState()
 
             SportEatResultsAppTheme(darkTheme = isDarkTheme) {
                 MainScreen(
                     isDarkTheme = isDarkTheme,
-                    onThemeChange = { mainViewModel.setTheme(it) }
+                    onThemeChange = { mainViewModel.setTheme(it) },
+                    weightUnit = weightUnit,
+                    onWeightUnitChange = { mainViewModel.setWeightUnit(it) }
                 )
             }
         }

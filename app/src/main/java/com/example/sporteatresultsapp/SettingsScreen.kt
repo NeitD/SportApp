@@ -1,5 +1,6 @@
 package com.example.sporteatresultsapp
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -17,10 +18,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -32,6 +29,8 @@ fun SettingsScreen(
     onBackClick: () -> Unit,
     isDarkTheme: Boolean,
     onThemeChange: (Boolean) -> Unit,
+    weightUnit: String,
+    onWeightUnitChange: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -75,10 +74,13 @@ fun SettingsScreen(
                     onCheckedChange = onThemeChange
                 )
                 HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
-                Text(
-                    text = "Units: kg, sm",
-                    fontSize = 16.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                SettingClickableItem(
+                    title = "Weight unit",
+                    value = if (weightUnit == "kg") "Kilograms (kg)" else "Pounds (lbs)",
+                    onClick = {
+                        val nextUnit = if (weightUnit == "kg") "lbs" else "kg"
+                        onWeightUnitChange(nextUnit)
+                    }
                 )
             }
         }
@@ -94,5 +96,18 @@ fun SettingItem(title: String, initialValue: Boolean, onCheckedChange: (Boolean)
     ) {
         Text(text = title, fontSize = 16.sp)
         Switch(checked = initialValue, onCheckedChange = onCheckedChange)
+    }
+}
+
+@Composable
+fun SettingClickableItem(title: String, value: String, onClick: () -> Unit) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(vertical = 12.dp)
+    ) {
+        Text(text = title, fontSize = 16.sp)
+        Text(text = value, fontSize = 14.sp, color = MaterialTheme.colorScheme.primary)
     }
 }
