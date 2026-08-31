@@ -31,6 +31,8 @@ fun SettingsScreen(
     onThemeChange: (Boolean) -> Unit,
     weightUnit: String,
     onWeightUnitChange: (String) -> Unit,
+    heightUnit: String,
+    onHeightUnitChange: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -80,6 +82,15 @@ fun SettingsScreen(
                     onClick = {
                         val nextUnit = if (weightUnit == "kg") "lbs" else "kg"
                         onWeightUnitChange(nextUnit)
+                    }
+                )
+                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+                SettingClickableItem(
+                    title = "Height unit",
+                    value = if (heightUnit == "cm") "Centimeters (cm)" else "Inches (in)",
+                    onClick = {
+                        val nextUnit = if (heightUnit == "cm") "in" else "cm"
+                        onHeightUnitChange(nextUnit)
                     }
                 )
             }

@@ -45,6 +45,7 @@ import java.time.format.DateTimeFormatter
 fun ProfileScreen(
     modifier: Modifier = Modifier,
     weightUnit: String,
+    heightUnit: String,
     onSettingsClick: () -> Unit
 ) {
     // profile data (hard)
@@ -89,6 +90,14 @@ fun ProfileScreen(
             (weightDouble * 0.453592).let { "%.1f".format(it) }
         } else {
             weight
+        }
+    }
+
+    val displayHeight = remember(heightDouble, heightUnit) {
+        if (heightUnit == "in") {
+            (heightDouble * 2.54).let { "%.1f".format(it) }
+        } else {
+            height
         }
     }
 
@@ -150,8 +159,9 @@ fun ProfileScreen(
                 firstName = firstName,
                 lastName = lastName,
                 weight = displayWeight,
-                height = height,
+                height = displayHeight,
                 weightUnit = weightUnit,
+                heightUnit = heightUnit,
                 birthDate = birthDate.format(dateFormatter),
                 age = age,
                 onBirthDateClick = { datePickerDialog.show() },
@@ -198,6 +208,7 @@ fun ProfileInfoColumn(
     weight: String,
     height: String,
     weightUnit: String,
+    heightUnit: String,
     birthDate: String,
     age: Int,
     onBirthDateClick: () -> Unit,
@@ -226,7 +237,7 @@ fun ProfileInfoColumn(
             ProfileInfoRow(label = "First name", value = firstName)
             ProfileInfoRow(label = "Last name", value = lastName)
             ProfileInfoRow(label = "Weight", value = "$weight $weightUnit")
-            ProfileInfoRow(label = "Height", value = "$height cm")
+            ProfileInfoRow(label = "Height", value = "$height $heightUnit")
 
             Column(
                 modifier = Modifier.clickable(onClick = onBirthDateClick)

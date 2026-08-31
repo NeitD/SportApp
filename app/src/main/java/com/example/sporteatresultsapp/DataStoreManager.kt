@@ -22,6 +22,7 @@ class DataStoreManager(private val context: Context) {
         val RESULTS_LIST_KEY = stringPreferencesKey("results_list")
         val DARK_THEME_KEY = booleanPreferencesKey("dark_theme")
         val WEIGHT_UNIT_KEY = stringPreferencesKey("weight_unit")
+        val HEIGHT_UNIT_KEY = stringPreferencesKey("height_unit")
     }
 
     // Сохранить список — suspend потому что это асинхронная операция
@@ -68,5 +69,13 @@ class DataStoreManager(private val context: Context) {
 
     val weightUnitFlow: Flow<String> = context.dataStore.data.map {
         it[WEIGHT_UNIT_KEY] ?: "kg"
+    }
+
+    suspend fun saveHeightUnit(unit: String) {
+        context.dataStore.edit { it[HEIGHT_UNIT_KEY] = unit }
+    }
+
+    val heightUnitFlow: Flow<String> = context.dataStore.data.map {
+        it[HEIGHT_UNIT_KEY] ?: "cm"
     }
 }

@@ -54,6 +54,8 @@ fun MainScreen(
     onThemeChange: (Boolean) -> Unit,
     weightUnit: String,
     onWeightUnitChange: (String) -> Unit,
+    heightUnit: String,
+    onHeightUnitChange: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
 
@@ -100,6 +102,8 @@ fun MainScreen(
                 onThemeChange = onThemeChange,
                 weightUnit = weightUnit,
                 onWeightUnitChange = onWeightUnitChange,
+                heightUnit = heightUnit,
+                onHeightUnitChange = onHeightUnitChange,
                 modifier = screenModifier
             )
         } else {
@@ -113,6 +117,7 @@ fun MainScreen(
                 3 -> ProfileScreen(
                     modifier = screenModifier,
                     weightUnit = weightUnit,
+                    heightUnit = heightUnit,
                     onSettingsClick = { isSettingsOpen = true }
                 )
             }
@@ -120,18 +125,5 @@ fun MainScreen(
     }
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
-@Composable
-@Preview(showBackground = true)
-fun MainScreenPreview(modifier: Modifier = Modifier) {
-    SportEatResultsAppTheme() {
-        MainScreen(
-            isDarkTheme = false,
-            onThemeChange = {},
-            weightUnit = "kg",
-            onWeightUnitChange = {}
-        )
-    }
-}
 
 

@@ -13,6 +13,10 @@ class MainViewModel(private val dataStoreManager: DataStoreManager) : ViewModel(
     val weightUnit = dataStoreManager.weightUnitFlow
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "kg")
 
+    val heightUnit = dataStoreManager.heightUnitFlow
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "cm")
+
+
     fun setTheme(isDark: Boolean) {
         viewModelScope.launch {
             dataStoreManager.saveTheme(isDark)
@@ -22,6 +26,12 @@ class MainViewModel(private val dataStoreManager: DataStoreManager) : ViewModel(
     fun setWeightUnit(unit: String) {
         viewModelScope.launch {
             dataStoreManager.saveWeightUnit(unit)
+        }
+    }
+
+    fun setHeightUnit(unit: String) {
+        viewModelScope.launch {
+            dataStoreManager.saveHeightUnit(unit)
         }
     }
 }
