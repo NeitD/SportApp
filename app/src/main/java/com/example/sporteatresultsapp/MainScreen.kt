@@ -56,6 +56,7 @@ fun MainScreen(
     onWeightUnitChange: (String) -> Unit,
     heightUnit: String,
     onHeightUnitChange: (String) -> Unit,
+    onLogout: () -> Unit,
     modifier: Modifier = Modifier
 ) {
 
@@ -104,7 +105,8 @@ fun MainScreen(
                 onWeightUnitChange = onWeightUnitChange,
                 heightUnit = heightUnit,
                 onHeightUnitChange = onHeightUnitChange,
-                modifier = screenModifier
+                onLogout = onLogout,
+                modifier = screenModifier,
             )
         } else {
             when (selectedIndex) {

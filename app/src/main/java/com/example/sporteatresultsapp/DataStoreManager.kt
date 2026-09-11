@@ -23,6 +23,7 @@ class DataStoreManager(private val context: Context) {
         val DARK_THEME_KEY = booleanPreferencesKey("dark_theme")
         val WEIGHT_UNIT_KEY = stringPreferencesKey("weight_unit")
         val HEIGHT_UNIT_KEY = stringPreferencesKey("height_unit")
+        val IS_LOGGED_IN_KEY = booleanPreferencesKey("is_logged_in")
     }
 
     // Сохранить список — suspend потому что это асинхронная операция
@@ -77,5 +78,13 @@ class DataStoreManager(private val context: Context) {
 
     val heightUnitFlow: Flow<String> = context.dataStore.data.map {
         it[HEIGHT_UNIT_KEY] ?: "cm"
+    }
+
+    suspend fun saveLoggedInState(isLoggedIn: Boolean) {
+        context.dataStore.edit { it[IS_LOGGED_IN_KEY] = isLoggedIn }
+    }
+
+    val isLoggedInFlow: Flow<Boolean> = context.dataStore.data.map {
+        it[IS_LOGGED_IN_KEY] ?: false
     }
 }
