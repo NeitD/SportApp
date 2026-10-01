@@ -17,7 +17,7 @@ class MainViewModel(private val dataStoreManager: DataStoreManager) : ViewModel(
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "cm")
 
     val isLoggedIn = dataStoreManager.isLoggedInFlow
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null) // данные есчитываются из DataStore
 
     fun setTheme(isDark: Boolean) {
         viewModelScope.launch {
