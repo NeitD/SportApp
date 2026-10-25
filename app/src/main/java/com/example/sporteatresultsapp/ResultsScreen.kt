@@ -38,7 +38,8 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class ResultItem(
-   val exerciseName: String,
+    val id: Int = 0,
+    val exerciseName: String,
     val weight: Double
 )
 
@@ -75,7 +76,7 @@ fun ResultsScreen(
                 val weight = weightInput.toDoubleOrNull() ?: 0.0
 
                 if (exerciseName.isNotBlank() && weight > 0) {
-                    viewModel.addResult(ResultItem(exerciseName, weight))
+                    viewModel.addResult(ResultItem(exerciseName = exerciseName, weight = weight))
                     exerciseName = ""
                     weightInput = ""
                 }

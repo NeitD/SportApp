@@ -3,19 +3,32 @@ package com.example.sporteatresultsapp
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.sporteatresultsapp.data.AppDatabase
+import com.example.sporteatresultsapp.data.FoodEntity
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
-class FoodViewModel(application: Application): AndroidViewModel(application) {
+class FoodViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val dataStoreManager = DataStoreManager(application)
+    private val foodDao = AppDatabase.getDatabase(application).foodDao()
 
-    // StateFlow — как Flow, но всегда хранит последнее значение
-    // UI подписывается на него и автоматически перерисовывается
-    val foodList: StateFlow<List<FoodItem>> = dataStoreManager
-        .getFoodList()
+    val foodList: StateFlow<List<FoodItem>> = foodDao
+        .getAllFood()
+        .map { entities ->
+            entities.map { entity ->
+                FoodItem(
+                    id = entity.id,
+                    name = entity.name,
+                    protein = entity.protein,
+                    fat = entity.fat,
+                    carbs = entity.carbs
+                )
+            }
+        }
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
@@ -23,22 +36,36 @@ class FoodViewModel(application: Application): AndroidViewModel(application) {
         )
 
     fun addFood(item: FoodItem) {
-        viewModelScope.launch { // запускаем корутину для async операции
-            val updated = foodList.value + item
-            dataStoreManager.saveFoodList(updated)
+        viewModelScope.launch(Dispatchers.IO) {
+            foodDao.insertFood(
+                FoodEntity(
+                    id = item.id,
+                    name = item.name,
+                    protein = item.protein,
+                    fat = item.fat,
+                    carbs = item.carbs
+                )
+            )
         }
     }
 
     fun deleteFood(item: FoodItem) {
-        viewModelScope.launch {
-            val updated = foodList.value - item
-            dataStoreManager.saveFoodList(updated)
+        viewModelScope.launch(Dispatchers.IO) {
+            foodDao.deleteFood(
+                FoodEntity(
+                    id = item.id,
+                    name = item.name,
+                    protein = item.protein,
+                    fat = item.fat,
+                    carbs = item.carbs
+                )
+            )
         }
     }
 
     fun clearAll() {
-        viewModelScope.launch {
-            dataStoreManager.saveFoodList(emptyList())
+        viewModelScope.launch(Dispatchers.IO) {
+            foodDao.clearAllFood()
         }
     }
 }

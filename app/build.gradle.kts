@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.ksp)
     kotlin("plugin.serialization") version "2.0.21"
 }
 
@@ -43,6 +44,11 @@ android {
 dependencies {
     // DataStore Preferences
     implementation("androidx.datastore:datastore-preferences:1.2.1")
+
+    // Room Database
+    implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.room.ktx)
+    "ksp"(libs.androidx.room.compiler)
 
     // Для работы с корутинами
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.11.0")

@@ -5,86 +5,54 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
-import kotlinx.serialization.json.Json
+import java.io.IOException
 
-// Расширение — создаёт DataStore один раз на весь app
-private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "food_data")
+private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "user_settings")
 
 class DataStoreManager(private val context: Context) {
 
-    // key
     companion object {
-        val FOOD_LIST_KEY = stringPreferencesKey("food_list")
-        val RESULTS_LIST_KEY = stringPreferencesKey("results_list")
         val DARK_THEME_KEY = booleanPreferencesKey("dark_theme")
         val WEIGHT_UNIT_KEY = stringPreferencesKey("weight_unit")
         val HEIGHT_UNIT_KEY = stringPreferencesKey("height_unit")
         val IS_LOGGED_IN_KEY = booleanPreferencesKey("is_logged_in")
     }
 
-    // Сохранить список — suspend потому что это асинхронная операция
-    suspend fun saveFoodList(foodList: List<FoodItem>) {
-        val json = Json.encodeToString(foodList)
-        context.dataStore.edit { preferences ->
-            preferences[FOOD_LIST_KEY] = json
-        }
-    }
-
-    // Читать список — возвращает Flow, UI сам обновится при изменении
-    fun getFoodList(): Flow<List<FoodItem>> {
-        return context.dataStore.data.map { preferences ->
-            val json = preferences[FOOD_LIST_KEY] ?: return@map emptyList()
-            Json.decodeFromString<List<FoodItem>>(json)
-        }
-    }
-
-    suspend fun saveResultsList(resultsList: List<ResultItem>) {
-        val json = Json.encodeToString(resultsList)
-        context.dataStore.edit { preferences ->
-            preferences[RESULTS_LIST_KEY] = json
-        }
-    }
-
-    fun getResultsList(): Flow<List<ResultItem>> {
-        return context.dataStore.data.map { preferences ->
-            val json = preferences[RESULTS_LIST_KEY] ?: return@map emptyList()
-            Json.decodeFromString<List<ResultItem>>(json)
-        }
-    }
-
     suspend fun saveTheme(isDark: Boolean) {
         context.dataStore.edit { it[DARK_THEME_KEY] = isDark }
     }
 
-    val isDarkThemeFlow: Flow<Boolean> = context.dataStore.data.map {
-        it[DARK_THEME_KEY] ?: false
-    }
+    val isDarkThemeFlow: Flow<Boolean> = context.dataStore.data
+        .catch { if (it is IOException) emit(emptyPreferences()) else throw it }
+        .map { it[DARK_THEME_KEY] ?: false }
 
     suspend fun saveWeightUnit(unit: String) {
         context.dataStore.edit { it[WEIGHT_UNIT_KEY] = unit }
     }
 
-    val weightUnitFlow: Flow<String> = context.dataStore.data.map {
-        it[WEIGHT_UNIT_KEY] ?: "kg"
-    }
+    val weightUnitFlow: Flow<String> = context.dataStore.data
+        .catch { if (it is IOException) emit(emptyPreferences()) else throw it }
+        .map { it[WEIGHT_UNIT_KEY] ?: "kg" }
 
     suspend fun saveHeightUnit(unit: String) {
         context.dataStore.edit { it[HEIGHT_UNIT_KEY] = unit }
     }
 
-    val heightUnitFlow: Flow<String> = context.dataStore.data.map {
-        it[HEIGHT_UNIT_KEY] ?: "cm"
-    }
+    val heightUnitFlow: Flow<String> = context.dataStore.data
+        .catch { if (it is IOException) emit(emptyPreferences()) else throw it }
+        .map { it[HEIGHT_UNIT_KEY] ?: "cm" }
 
     suspend fun saveLoggedInState(isLoggedIn: Boolean) {
         context.dataStore.edit { it[IS_LOGGED_IN_KEY] = isLoggedIn }
     }
 
-    val isLoggedInFlow: Flow<Boolean> = context.dataStore.data.map {
-        it[IS_LOGGED_IN_KEY] ?: false
-    }
+    val isLoggedInFlow: Flow<Boolean> = context.dataStore.data
+        .catch { if (it is IOException) emit(emptyPreferences()) else throw it }
+        .map { it[IS_LOGGED_IN_KEY] ?: false }
 }

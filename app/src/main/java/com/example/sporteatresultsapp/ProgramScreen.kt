@@ -1,50 +1,71 @@
 package com.example.sporteatresultsapp
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Pause
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.delay
 
 @Composable
 fun ProgramScreen(modifier: Modifier = Modifier) {
     var selectedDayIndex by remember { mutableIntStateOf(0) }
-
     val workoutProgram = getSampleWorkoutProgram()
 
     Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(horizontal = 16.dp, vertical = 16.dp)
+            .padding(horizontal = 16.dp, vertical = 12.dp)
     ) {
         Text(
             text = "Training program",
-            fontSize = 24.sp,
+            fontSize = 22.sp,
             fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(bottom = 16.dp),
+            modifier = Modifier.padding(bottom = 8.dp),
         )
 
         DaySelector(
@@ -53,7 +74,16 @@ fun ProgramScreen(modifier: Modifier = Modifier) {
             onDaySelected = { selectedDayIndex = it }
         )
 
-        ExerciseTable(exercises = workoutProgram.days[selectedDayIndex].exercises)
+        Box(
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth()
+                .padding(bottom = 12.dp)
+        ) {
+            ExerciseTable(exercises = workoutProgram.days[selectedDayIndex].exercises)
+        }
+
+        RestTimerCard()
     }
 }
 
@@ -159,6 +189,14 @@ fun TableHeader() {
 
 @Composable
 fun TableRow(exercise: Exercise) {
+    // узнаём колво подходов
+    val totalSets = exercise.setsAndReps.firstOrNull { it.isDigit() }?.digitToInt() ?: 3
+
+    // память для галочек
+    var completedSets by remember(exercise) {
+        mutableStateOf(List(totalSets) { false })
+    }
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -181,6 +219,12 @@ fun TableRow(exercise: Exercise) {
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Medium
             )
+            Text(
+                text = exercise.setsAndReps,
+                modifier = Modifier.weight(0.8f),
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Normal
+            )
         }
 
         if (exercise.notes.isNotEmpty()) {
@@ -191,6 +235,243 @@ fun TableRow(exercise: Exercise) {
                 color = Color.Gray,
                 fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
             )
+        }
+
+        // ряд с подходами
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 4.dp),
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "Подходы:",
+                fontSize = 11.sp,
+                color = MaterialTheme.colorScheme.outline
+            )
+
+            for (i in 0 until totalSets) {
+                val isChecked = completedSets.getOrElse(i) { false }
+
+                FilterChip(
+                    selected = isChecked,
+                    onClick = {
+                        val newList = completedSets.toMutableList()
+                        newList[i] = !newList[i]
+                        completedSets = newList
+                    },
+                    label = { Text("Set ${i + 1}", fontSize = 11.sp)},
+                    leadingIcon = if (isChecked) {
+                        { Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(14.dp)) }
+                    } else null
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun RestTimerCard() {
+    var selectedMinutes by remember { mutableIntStateOf(1) }
+    var selectedSeconds by remember { mutableIntStateOf(30) }
+
+    var totalTimeSeconds by remember { mutableIntStateOf(90) }
+    var timeRemainingSeconds by remember { mutableIntStateOf(90) }
+    var isTimerRunning by remember { mutableStateOf(false) }
+
+    // Асинхронный отсчет времени каждой секунды
+    LaunchedEffect(isTimerRunning, timeRemainingSeconds) {
+        if (isTimerRunning && timeRemainingSeconds > 0) {
+            delay(1000L)
+            timeRemainingSeconds -= 1
+        } else if (timeRemainingSeconds == 0) {
+            isTimerRunning = false
+        }
+    }
+
+    val minutesList = (0..15).toList()
+    val secondsList = (0..59).toList()
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.medium,
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = "⏱️ Таймер отдыха",
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            if (!isTimerRunning && timeRemainingSeconds == totalTimeSeconds) {
+                // Выбор времени колесиками минут и секунд
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    // Колесо минут
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text("Мин", fontSize = 12.sp, color = Color.Gray)
+                        WheelPicker(
+                            items = minutesList,
+                            initialValue = selectedMinutes,
+                            onItemSelected = {
+                                selectedMinutes = it
+                                totalTimeSeconds = selectedMinutes * 60 + selectedSeconds
+                                timeRemainingSeconds = totalTimeSeconds
+                            }
+                        )
+                    }
+
+                    Text(
+                        text = ":",
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(horizontal = 16.dp)
+                    )
+
+                    // Колесо секунд
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text("Сек", fontSize = 12.sp, color = Color.Gray)
+                        WheelPicker(
+                            items = secondsList,
+                            initialValue = selectedSeconds,
+                            onItemSelected = {
+                                selectedSeconds = it
+                                totalTimeSeconds = selectedMinutes * 60 + selectedSeconds
+                                timeRemainingSeconds = totalTimeSeconds
+                            }
+                        )
+                    }
+                }
+            } else {
+                // Отображение большого таймера обратного отсчета
+                val currentMin = timeRemainingSeconds / 60
+                val currentSec = timeRemainingSeconds % 60
+                val formattedTime = String.format("%02d:%02d", currentMin, currentSec)
+
+                Text(
+                    text = formattedTime,
+                    fontSize = 42.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    color = if (timeRemainingSeconds <= 5 && timeRemainingSeconds > 0) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
+                )
+
+                if (timeRemainingSeconds == 0) {
+                    Text(
+                        text = "Отдых окончен! Вперёд к подходу! 💪",
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.padding(vertical = 4.dp)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Кнопки Управления (Старт / Пауза / Сброс)
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Button(
+                    onClick = {
+                        if (timeRemainingSeconds == 0) {
+                            timeRemainingSeconds = totalTimeSeconds
+                        }
+                        isTimerRunning = !isTimerRunning
+                    },
+                    enabled = totalTimeSeconds > 0
+                ) {
+                    Icon(
+                        imageVector = if (isTimerRunning) Icons.Default.Pause else Icons.Default.PlayArrow,
+                        contentDescription = null
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(if (isTimerRunning) "Пауза" else "Старт")
+                }
+
+                OutlinedButton(
+                    onClick = {
+                        isTimerRunning = false
+                        timeRemainingSeconds = totalTimeSeconds
+                    }
+                ) {
+                    Icon(imageVector = Icons.Default.Refresh, contentDescription = null)
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text("Сброс")
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun WheelPicker(
+    items: List<Int>,
+    initialValue: Int, // Начальное выбранное значение
+    onItemSelected: (Int) -> Unit // Колбэк при выборе числа
+) {
+    val listState =
+        rememberLazyListState(initialFirstVisibleItemIndex = items.indexOf(initialValue))
+    // поведение магнита при скролле
+    val snapFlingBehavior = rememberSnapFlingBehavior(lazyListState = listState)
+
+    // отслеживаем остановку скролла
+    LaunchedEffect(listState.isScrollInProgress) {
+        if (!listState.isScrollInProgress) {
+            val centerIndex = listState.firstVisibleItemIndex
+            if (centerIndex in items.indices) {
+                onItemSelected(items[centerIndex])
+            }
+        }
+    }
+
+    Box(
+        modifier = Modifier
+            .height(90.dp)
+            .width(60.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        // подсветка активной строчки в центре колеса
+        Surface(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(30.dp),
+            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
+            shape = RoundedCornerShape(8.dp)
+        ) {}
+
+        LazyColumn(
+            state = listState,
+            flingBehavior = snapFlingBehavior,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            item { Spacer(modifier = Modifier.height(30.dp)) } // отступ
+            itemsIndexed(items) { index, item ->
+                val isSelected = listState.firstVisibleItemIndex == index
+                Text(
+                    text = String.format("%02d", item),
+                    fontSize = if (isSelected) 20.sp else 15.sp,
+                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                    color = if (isSelected) MaterialTheme.colorScheme.primary else Color.Gray,
+                    modifier = Modifier.padding(vertical = 4.dp)
+                )
+            }
+            item { Spacer(modifier = Modifier.height(30.dp)) } // отступ
         }
     }
 }

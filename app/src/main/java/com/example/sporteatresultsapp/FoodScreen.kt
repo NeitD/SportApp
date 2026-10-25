@@ -38,6 +38,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class FoodItem(
+    val id: Int = 0,
     val name: String,
     val protein: Double,
     val fat: Double,
@@ -94,7 +95,7 @@ fun FoodScreen(
                 val carbs = carbsInput.toDoubleOrNull() ?: 0.0
 
                 if (foodName.isNotBlank() && (protein > 0 || fat > 0 || carbs > 0)) {
-                    viewModel.addFood(FoodItem(foodName, protein, fat, carbs))
+                    viewModel.addFood(FoodItem(name = foodName, protein = protein, fat = fat, carbs = carbs))
                     // очищаем поля
                     foodName = ""
                     proteinInput = ""

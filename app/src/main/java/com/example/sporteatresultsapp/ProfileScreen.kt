@@ -55,17 +55,11 @@ fun ProfileScreen(
     var height by remember { mutableStateOf("177") }
     var birthDate by remember { mutableStateOf(LocalDate.of(2006, 10, 10)) }
 
-    var age = remember(birthDate) {
+    val age = remember(birthDate) {
         Period.between(birthDate, LocalDate.now()).years
     }
 
     val dateFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy")
-
-    // calories
-    var targetCalories by remember { mutableStateOf("3020") }
-    var targetProtein by remember { mutableStateOf("165") }
-    var targetFat by remember { mutableStateOf("60") }
-    var targetCarbs by remember { mutableStateOf("460") }
 
     val context = LocalContext.current
 
@@ -84,6 +78,20 @@ fun ProfileScreen(
     // BMI
     val weightDouble = weight.toDoubleOrNull() ?: 0.0
     val heightDouble = height.toDoubleOrNull() ?: 1.0 // чтобы на ноль не делить
+
+    // activityFactor
+    var selectedActivityFactor by remember { mutableStateOf(1.55) }
+
+    // calories
+    val nutritionTarget = remember(weightDouble, heightDouble, age, selectedActivityFactor) {
+        calculateNutrition(
+            weightKg = weightDouble,
+            heightCm = heightDouble,
+            ageYears = age,
+            isMale = true,
+            activityFactor = selectedActivityFactor
+        )
+    }
 
     val displayWeight = remember(weightDouble, weightUnit) {
         if (weightUnit == "lbs") {
@@ -169,10 +177,10 @@ fun ProfileScreen(
             )
 
             DailyTargetsColumn(
-                calories = targetCalories,
-                protein = targetProtein,
-                fat = targetFat,
-                carbs = targetCarbs,
+                calories = nutritionTarget.calories.toString(),
+                protein = nutritionTarget.protein.toString(),
+                fat = nutritionTarget.fat.toString(),
+                carbs = nutritionTarget.carbs.toString(),
                 modifier = Modifier.weight(1f)
             )
         }
@@ -447,4 +455,47 @@ fun WaterTrackerCard(
             )
         }
     }
+}
+
+data class NutritionTarget(
+    val calories: Int,
+    val protein: Int,
+    val fat: Int,
+    val carbs: Int
+)
+
+fun calculateNutrition(
+    weightKg: Double,
+    heightCm: Double,
+    ageYears: Int,
+    isMale: Boolean,
+    activityFactor: Double = 1.55 // по умолчанию умеренная активность
+): NutritionTarget {
+    if (weightKg <= 0 || heightCm <= 0 || ageYears <= 0) {
+        return NutritionTarget(2000, 150, 60, 250) // default
+    }
+
+    // формула BMR
+    val genderBonus = if (isMale) 5 else -161
+    val bmr = (10 * weightKg) + (6.25 * heightCm) - (5 * ageYears) + genderBonus
+
+    // дневные калории с учётом активности
+    val totalCalories = (bmr * activityFactor).toInt()
+
+    // бжу
+    val proteinGrams = (weightKg * 2.0).toInt() // 2г на кг
+    val fatGrams = (weightKg * 1.0).toInt() // 1г на кг
+
+    val proteinCalories = proteinGrams * 4
+    val fatCalories = fatGrams * 9
+    val remainingCalories = (totalCalories - proteinCalories - fatCalories).coerceAtLeast(0) // ограничение по минимуму = 0
+
+    val carbsGrams = remainingCalories / 4
+
+    return NutritionTarget(
+        calories = totalCalories,
+        protein = proteinGrams,
+        fat = fatGrams,
+        carbs = carbsGrams
+    )
 }
